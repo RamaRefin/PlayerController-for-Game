@@ -19,6 +19,14 @@ public class PlayerMovement : MonoBehaviour
     public float crouchSpeed = 4f;
     public float crouchScaleY = 0.5f;
 
+    [Header("Dodge Setting")]
+    public float dodgeSpeed = 10f;
+    public float dodgeDuration = 0.5f;
+    public float dodgeCooldown = 1f;
+
+    private bool isDodging = false;
+    private bool canDodge = true;
+
     private bool isCrouching = false;
     private BoxCollider2D bodyCollider;
     private Vector2 originalColliderSize;
@@ -54,7 +62,7 @@ public class PlayerMovement : MonoBehaviour
     {
         float moveHorizontal = canMove ? Input.GetAxis("Horizontal") : 0f;
 
-       if(!isSlide)
+       if(!isSlide && !isDodging)
        {
          rb.velocity = new Vector2(moveHorizontal * speed, rb.velocity.y);
        }
@@ -96,6 +104,12 @@ public class PlayerMovement : MonoBehaviour
         StartCrouch();
     } else {
         StopCrouch();
+    }
+
+    //dodge player input
+    if(Input.GetKeyDown(KeyCode.LeftShift) && canDodge && !isDodging && isGrounded)
+    {
+        StartCoroutine(Dodge());
     }
 
     transform.localScale = scale;
@@ -188,6 +202,37 @@ public class PlayerMovement : MonoBehaviour
 
         transform.localScale = originalScale;
         anim.SetBool("isCrouching", false);
+    }
+
+    IEnumerator Dodge()
+    {
+        isDodging = true;
+        canDodge = false;
+        canMove = false;
+
+        anim.SetBool("isDodging", true);
+
+        float direction;
+
+        if (transform.localScale.x > 0)
+        {
+            direction = 1f;
+        }
+        else
+        {
+            direction = -1f;
+        }
+
+        rb.velocity = new Vector2(direction * dodgeSpeed, rb.velocity.y);
+
+        yield return new WaitForSeconds(dodgeDuration);
+
+        anim.SetBool("isDodging", false);
+        canMove = true;
+        isDodging = false;
+
+        yield return new WaitForSeconds(dodgeCooldown);
+        canDodge = true;
     }
 
     private void SetAnimation(float moveHorizontal)

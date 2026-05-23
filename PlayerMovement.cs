@@ -34,7 +34,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 originalScale;
 
     public bool canMove = true;
-    bool isGrounded = false;
+    public bool isGrounded = false;
     public bool isSlide = false;
 
     private Animator anim;
